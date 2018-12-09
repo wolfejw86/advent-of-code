@@ -133,8 +133,25 @@ function createGuardSleepDataByDate(events) {
   return allGuardsAsleepMaps;
 }
 
-function getMostAsleepGuardSeries(allGuardsAsleepMaps) {
-  const guardSleepTotals = allGuardsAsleepMaps.reduce((data, shift) => {
+function getGuardSeriesForGuard(allGuardsAsleepMaps) {
+  return function(guardId) {
+    const idmatch = id => arr => arr.filter(g => g.guardId === id);
+
+    return idmatch(guardId)(allGuardsAsleepMaps);
+  };
+}
+
+function getMostAsleepGuardSeries(guardSleepTotals) {
+  const mostMinutesAsleep = Math.max(...Object.values(guardSleepTotals));
+  const [[guardWithMostSleepMinutes]] = Object.entries(guardSleepTotals).filter(
+    ([key, val]) => val === mostMinutesAsleep
+  );
+
+  return getGuardSeriesForGuard(allGuardsAsleepMaps)(guardWithMostSleepMinutes);
+}
+
+function getGuardSleepTotals(allGuardsAsleepMaps) {
+  return allGuardsAsleepMaps.reduce((data, shift) => {
     if (!data[shift.guardId]) {
       data[shift.guardId] = 0;
     }
@@ -146,44 +163,83 @@ function getMostAsleepGuardSeries(allGuardsAsleepMaps) {
     });
     return data;
   }, {});
+}
 
-  const mostMinutesAsleep = Math.max(...Object.values(guardSleepTotals));
-  const [[guardWithMostSleepMinutes]] = Object.entries(guardSleepTotals).filter(
-    ([key, val]) => val === mostMinutesAsleep
-  );
+function tallyMinutesForSeries(series) {
+  return series.reduce((data, series) => {
+    Object.entries(series.minutes).forEach(([key, val]) => {
+      if (val === "#") {
+        data[key]++;
+      }
+    });
 
-  const idmatch = id => arr => arr.filter(g => g.guardId === id);
-  const guardSeriesForGuard = idmatch(guardWithMostSleepMinutes)(
-    allGuardsAsleepMaps
-  );
+    return data;
+  }, setupMinuteMapCounter());
+}
 
-  return guardSeriesForGuard;
+function getGuardSeparateTotals(allGuardsAsleepMaps) {
+  const uniqueGuardIds = allGuardsAsleepMaps
+    .map(map => map.guardId)
+    .filter((n, i, arr) => arr.indexOf(n) === i);
+
+  const findGuardSeriesById = getGuardSeriesForGuard(allGuardsAsleepMaps);
+
+  const seriesByGuard = uniqueGuardIds.map(findGuardSeriesById);
+  return seriesByGuard.reduce((data, series) => {
+    const minutesTotals = tallyMinutesForSeries(series);
+    const guardId = series[0].guardId;
+    data.push({ minutesTotals, guardId });
+    return data;
+  }, []);
+}
+
+function setupMinuteMapCounter() {
+  const minutesMap = setupSleepMap();
+  Object.keys(minutesMap).forEach(key => (minutesMap[key] = 0));
+  return minutesMap;
 }
 
 const allGuardsAsleepMaps = createGuardSleepDataByDate(events);
 
-const guardSeriesForGuard = getMostAsleepGuardSeries(allGuardsAsleepMaps);
+const allSeriesTotals = getGuardSeparateTotals(allGuardsAsleepMaps);
 
-const minutesMap = setupSleepMap();
-Object.keys(minutesMap).forEach(key => (minutesMap[key] = 0));
+const maxMinuteAndTotalsByGuard = allSeriesTotals.map(
+  ({ minutesTotals, guardId }) => {
+    const maxMinuteTotal = Math.max(...Object.values(minutesTotals));
+    const minuteOfMostSleep = Object.keys(minutesTotals).filter(
+      key => minutesTotals[key] === maxMinuteTotal
+    );
+    return {
+      maxMinuteTotal,
+      minuteOfMostSleep,
+      guardId
+    };
+  }
+);
 
-const minutesCounter = guardSeriesForGuard.reduce((data, series) => {
-  Object.entries(series.minutes).forEach(([key, val]) => {
-    if (val === "#") {
-      data[key]++;
-    }
-  });
+const maxMinuteCount = Math.max(
+  ...maxMinuteAndTotalsByGuard.map(g => g.maxMinuteTotal)
+);
 
-  return data;
-}, minutesMap);
+// key to answer pt 2
+const [pt2AnswerGuard] = maxMinuteAndTotalsByGuard.filter(
+  g => (g.maxMinuteTotal = maxMinuteCount)
+);
+console.log("pt 2 answer");
+console.log(pt2AnswerGuard);
+
+const guardSeriesForGuard = getMostAsleepGuardSeries(
+  getGuardSleepTotals(allGuardsAsleepMaps)
+);
+
+const minutesCounter = tallyMinutesForSeries(guardSeriesForGuard);
 
 const mostMinuteCount = Math.max(...Object.values(minutesCounter));
 const minuteMostSlept = Object.keys(minutesCounter).find(
   key => minutesCounter[key] === mostMinuteCount
 );
+
+// key to answer pt 1
+console.log("pt 1 answer");
+console.log(guardSeriesForGuard[0].guardId);
 console.log(minuteMostSlept);
-fs.writeFileSync(
-  "guardWithMostMinutes.json",
-  JSON.stringify(guardSeriesForGuard, null, 2),
-  "utf8"
-);
