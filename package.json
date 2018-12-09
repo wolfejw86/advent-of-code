@@ -1,0 +1,23 @@
+{
+  "name": "adventofcode-2018",
+  "version": "1.0.0",
+  "description": "",
+  "main": "d1.js",
+  "scripts": {
+    "start": "nodemon"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wolfejw86/advent-of-code-2018.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wolfejw86/advent-of-code-2018/issues"
+  },
+  "homepage": "https://github.com/wolfejw86/advent-of-code-2018#readme",
+  "devDependencies": {
+    "nodemon": "^1.18.7"
+  }
+}
