@@ -80,6 +80,8 @@ let grid = createGridFromCoordinates(allCoordinates);
 
 grid = plotPoints(allCoordinates, grid);
 
+let areas = {};
+
 for (let i = 0; i < grid.length; i++) {
   for (let j = 0; j < grid[i].length; j++) {
     const mDistance = {};
@@ -98,9 +100,35 @@ for (let i = 0; i < grid.length; i++) {
       grid[i][j] = ".";
     } else {
       grid[i][j] = ids[0];
+      if (!areas[ids[0]]) {
+        areas[ids[0]] = 0;
+      }
+      areas[ids[0]]++;
     }
   }
 }
+
+let bottom = grid.length - 1;
+let right = grid[0].length - 1;
+for (let i = 0; i < grid.length; i++) {
+  if (areas[grid[i][0]]) {
+    delete areas[grid[i][0]];
+  }
+  if (areas[grid[i][right]]) {
+    delete areas[grid[i][right]];
+  }
+}
+for (let i = 0; i < grid[0].length; i++) {
+  if (areas[grid[0][i]]) {
+    delete areas[grid[0][i]];
+  }
+  if (areas[grid[bottom][i]]) {
+    delete areas[grid[bottom][i]];
+  }
+}
+console.log("Largest area that is enclosed!");
+console.log(Math.max(...Object.values(areas)));
+
 // console.log(p);
 // fs.writeFileSync("grid.txt", JSON.stringify(allCoordinates, null, 2), "utf8");
-fs.writeFileSync("grid.txt", drawGrid(grid), "utf8");
+fs.writeFileSync("grid.txt", JSON.stringify(areas, null, 2), "utf8");
