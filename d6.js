@@ -128,7 +128,3 @@ for (let i = 0; i < grid[0].length; i++) {
 }
 console.log("Largest area that is enclosed!");
 console.log(Math.max(...Object.values(areas)));
-
-// console.log(p);
-// fs.writeFileSync("grid.txt", JSON.stringify(allCoordinates, null, 2), "utf8");
-fs.writeFileSync("grid.txt", JSON.stringify(areas, null, 2), "utf8");
