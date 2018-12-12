@@ -80,51 +80,79 @@ let grid = createGridFromCoordinates(allCoordinates);
 
 grid = plotPoints(allCoordinates, grid);
 
-let areas = {};
+function drawGridReturnAreasByPoints(allCoordinates, grid) {
+  let areas = {};
 
-for (let i = 0; i < grid.length; i++) {
-  for (let j = 0; j < grid[i].length; j++) {
-    const mDistance = {};
-    for (const { x, y, id } of allCoordinates) {
-      mDistance[id] = Math.abs(j - x) + Math.abs(i - y);
-    }
-    const smallest = Math.min(...Object.values(mDistance));
-    const ids = [];
-    const matchingIds = Object.keys(mDistance).filter(key => {
-      if (mDistance[key] === smallest) {
-        ids.push(key);
+  for (let i = 0; i < grid.length; i++) {
+    for (let j = 0; j < grid[i].length; j++) {
+      const mDistance = {};
+      for (const { x, y, id } of allCoordinates) {
+        mDistance[id] = Math.abs(j - x) + Math.abs(i - y);
       }
-      return mDistance[key] === smallest;
-    });
-    if (matchingIds.length > 1) {
-      grid[i][j] = ".";
-    } else {
-      grid[i][j] = ids[0];
-      if (!areas[ids[0]]) {
-        areas[ids[0]] = 0;
+      const smallest = Math.min(...Object.values(mDistance));
+      const ids = [];
+      const matchingIds = Object.keys(mDistance).filter(key => {
+        if (mDistance[key] === smallest) {
+          ids.push(key);
+        }
+        return mDistance[key] === smallest;
+      });
+      if (matchingIds.length > 1) {
+        grid[i][j] = ".";
+      } else {
+        grid[i][j] = ids[0];
+        if (!areas[ids[0]]) {
+          areas[ids[0]] = 0;
+        }
+        areas[ids[0]]++;
       }
-      areas[ids[0]]++;
     }
   }
+  return areas;
 }
 
-let bottom = grid.length - 1;
-let right = grid[0].length - 1;
-for (let i = 0; i < grid.length; i++) {
-  if (areas[grid[i][0]]) {
-    delete areas[grid[i][0]];
+function getLargestEnclosedArea(allCoordinates, grid) {
+  const areas = drawGridReturnAreasByPoints(allCoordinates, grid);
+
+  let bottom = grid.length - 1;
+  let right = grid[0].length - 1;
+  for (let i = 0; i < grid.length; i++) {
+    if (areas[grid[i][0]]) {
+      delete areas[grid[i][0]];
+    }
+    if (areas[grid[i][right]]) {
+      delete areas[grid[i][right]];
+    }
   }
-  if (areas[grid[i][right]]) {
-    delete areas[grid[i][right]];
+  for (let i = 0; i < grid[0].length; i++) {
+    if (areas[grid[0][i]]) {
+      delete areas[grid[0][i]];
+    }
+    if (areas[grid[bottom][i]]) {
+      delete areas[grid[bottom][i]];
+    }
   }
+  console.log({ part1: Math.max(...Object.values(areas)) });
+  return areas;
 }
-for (let i = 0; i < grid[0].length; i++) {
-  if (areas[grid[0][i]]) {
-    delete areas[grid[0][i]];
+
+function calcInner10kArea(grid) {
+  let size = 0;
+  for (let i = 0; i < grid.length; i++) {
+    for (let j = 0; j < grid[i].length; j++) {
+      let totalDistance = 0;
+      for (const { x, y } of allCoordinates) {
+        totalDistance += Math.abs(j - x) + Math.abs(i - y);
+      }
+      if (totalDistance < 10000) {
+        size++;
+      }
+    }
   }
-  if (areas[grid[bottom][i]]) {
-    delete areas[grid[bottom][i]];
-  }
+  return size;
 }
-console.log("Largest area that is enclosed!");
-console.log(Math.max(...Object.values(areas)));
+
+getLargestEnclosedArea(allCoordinates, grid);
+
+const part2 = calcInner10kArea(grid);
+console.log({ part2 });
