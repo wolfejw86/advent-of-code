@@ -7,23 +7,21 @@ function getTreesHit(slopes) {
   let x = 0;
   let y = 0;
   let treesHit = 0;
+
+  // width is +1 over the max possible width value so when x === width it's really 0
   const width = slopes[0].length;
 
   while (y < slopes.length) {
     y += 1;
-    for (let i = 0; i < 3; i++) {
-      if (x === width) {
-        x = 0;
-      }
-      x++;
-    }
-
-    if (x === width) {
-      x = 0;
-    }
 
     if (y >= slopes.length) {
       break;
+    }
+
+    x += 3;
+
+    if (x >= width) {
+      x = Math.abs(width - x);
     }
 
     if (slopes[y][x] === '#') {
