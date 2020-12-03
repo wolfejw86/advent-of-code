@@ -37,7 +37,7 @@ function getTreesHit(slopes, xIncrement, yIncrement) {
   return treesHit;
 }
 
-const incrementPairs = [
+const slopeConfigs = [
   [1, 1],
   [3, 1],
   [5, 1],
@@ -47,7 +47,7 @@ const incrementPairs = [
 
 let treeHitTotals = 1;
 
-incrementPairs.forEach(([x, y]) => {
+slopeConfigs.forEach(([x, y]) => {
   const slopes = input.split('\n').map(row => row.split(''));
   const treesHit = getTreesHit(slopes, x, y);
   console.log({ treesHit, x, y });
